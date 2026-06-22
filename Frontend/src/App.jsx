@@ -1,7 +1,35 @@
-import Landing from './pages/Landing/Landing'
+import { Route, Routes } from "react-router-dom";
+import Dashboard from "./pages/Dashboard/Dashboard";
+import Landing from "./pages/Landing/Landing";
 
 function App() {
-  return <Landing />
+  return (
+    <Routes>
+      <Route path="/" element={<Landing />} />
+
+      <Route path="/dashboard" element={<Dashboard />} />
+
+      <Route
+        path="/internships"
+        element={<h1 style={{ color: "white" }}>Smart Match Coming Soon</h1>}
+      />
+
+      <Route
+        path="/resume-studio"
+        element={<h1 style={{ color: "white" }}>Resume Studio Coming Soon</h1>}
+      />
+
+      <Route
+        path="/career-copilot"
+        element={<h1 style={{ color: "white" }}>Career Copilot Coming Soon</h1>}
+      />
+
+      <Route
+        path="/profile"
+        element={<h1 style={{ color: "white" }}>Profile Coming Soon</h1>}
+      />
+    </Routes>
+  );
 }
 
-export default App
+export default App;
