@@ -10,10 +10,21 @@ function InternshipCard({ internship }) {
           <span className={`grid size-11 shrink-0 place-items-center rounded-xl text-sm font-bold ${internship.logoClass}`}>
             {internship.company.charAt(0)}
           </span>
-          <div className="min-w-0">
-            <h3 className="truncate font-semibold text-slate-100">{internship.role}</h3>
-            <p className="mt-1 text-sm text-slate-500">{internship.company}</p>
-          </div>
+<div className="min-w-0">
+  <h3 className="truncate font-semibold text-slate-100">
+    {internship.role}
+  </h3>
+
+  <p className="mt-1 text-sm text-slate-500">
+    {internship.company}
+  </p>
+
+  {internship.stipend && (
+    <span className="mt-2 inline-flex rounded-full border border-[#06B6D4]/20 bg-[#06B6D4]/10 px-2.5 py-1 text-xs font-semibold text-[#67E8F9]">
+      {internship.stipend}
+    </span>
+  )}
+</div>
         </div>
         <button type="button" aria-label={`Save ${internship.role}`} className="grid size-9 shrink-0 place-items-center rounded-lg text-slate-500 transition hover:bg-white/5 hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06B6D4]">
           <Bookmark className="size-4" />

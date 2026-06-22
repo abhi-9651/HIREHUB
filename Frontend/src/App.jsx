@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Landing from "./pages/Landing/Landing";
+import SmartMatch from "./pages/SmartMatch";
 
 function App() {
   return (
@@ -9,10 +10,7 @@ function App() {
 
       <Route path="/dashboard" element={<Dashboard />} />
 
-      <Route
-        path="/internships"
-        element={<h1 style={{ color: "white" }}>Smart Match Coming Soon</h1>}
-      />
+      <Route path="/internships" element={<SmartMatch />} />
 
       <Route
         path="/resume-studio"
