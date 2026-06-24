@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { MotionConfig, motion } from 'framer-motion'
 import {
   BadgeCheck,
@@ -17,6 +17,8 @@ import {
 import { Button, Card, SectionTitle, Sidebar } from '../../components'
 import InternshipCard from '../Dashboard/components/InternshipCard'
 import { FilterBar, MatchSummary } from './components'
+import { getProfile, calculateProfileScore } from '../../utils/profileStorage'
+import { useNavigate } from 'react-router-dom'
 
 const sidebarItems = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard, end: true },
@@ -175,17 +177,45 @@ const toDaysLabel = (days) => {
 }
 
 function SmartMatch() {
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [selectedCategories, setSelectedCategories] = useState([])
   const [selectedModes, setSelectedModes] = useState([])
   const [location, setLocation] = useState('')
   const [sortBy, setSortBy] = useState('best')
+  const [profile, setProfile] = useState(() => getProfile())
+
+  useEffect(() => {
+    const handleUpdate = () => setProfile(getProfile())
+    window.addEventListener('profile_updated', handleUpdate)
+    return () => window.removeEventListener('profile_updated', handleUpdate)
+  }, [])
+
+  const profileScore = calculateProfileScore(profile)
 
   const filteredInternships = useMemo(() => {
     const query = search.trim().toLowerCase()
     const locationQuery = location.trim().toLowerCase()
+    
+    // Parse user skills
+    const userSkills = Object.values(profile.skills || {}).flat().map(s => s.toLowerCase().trim())
 
     return internships
+      .map((internship) => {
+        // Calculate dynamic match score based on user skills vs internship skills
+        const matchingSkills = internship.skills.filter(skill => 
+          userSkills.some(us => us.includes(skill.toLowerCase()) || skill.toLowerCase().includes(us))
+        )
+        // Match rate floor is 55%, ceiling is 98%
+        const matchPercentage = internship.skills.length > 0 
+          ? 55 + Math.round((matchingSkills.length / internship.skills.length) * 43) 
+          : 55
+        
+        return {
+          ...internship,
+          match: matchPercentage
+        }
+      })
       .filter((internship) => {
         const matchesQuery = !query || [internship.title, internship.company, internship.location, ...internship.skills].some((value) => value.toLowerCase().includes(query))
         const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(internship.category)
@@ -199,7 +229,7 @@ function SmartMatch() {
         if (sortBy === 'stipend') return right.stipendValue - left.stipendValue
         return right.match - left.match
       })
-  }, [location, search, selectedCategories, selectedModes, sortBy])
+  }, [location, search, selectedCategories, selectedModes, sortBy, profile])
 
   const clearFilters = () => {
     setSearch('')
@@ -213,12 +243,18 @@ function SmartMatch() {
     setter(values.includes(value) ? values.filter((item) => item !== value) : [...values, value])
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('hirehub_session')
+    navigate('/')
+  }
+
   return (
     <MotionConfig reducedMotion="user">
       <div className="flex h-screen overflow-hidden bg-[#0F172A] text-slate-50">
         <Sidebar
           items={sidebarItems}
-          user={{ name: 'Abhi', email: 'Smart Match' }}
+          user={{ name: profile.name, email: profile.headline }}
+          onLogout={handleLogout}
           className="bg-[#0B1120]/95"
         />
 
@@ -255,7 +291,7 @@ function SmartMatch() {
 
                 <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[430px]">
                   {[
-                    { icon: BadgeCheck, label: 'Profile ready', value: '86%' },
+                    { icon: BadgeCheck, label: 'Profile ready', value: `${profileScore}%` },
                     { icon: BriefcaseBusiness, label: 'Priority matches', value: '24' },
                     { icon: Target, label: 'New today', value: '8' },
                   ].map((item, index) => (

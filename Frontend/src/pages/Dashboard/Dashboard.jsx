@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { MotionConfig, motion } from 'framer-motion'
 import {
   ArrowRight,
@@ -22,6 +22,8 @@ import {
 } from 'lucide-react'
 import { Button, Card, Input, SectionTitle, Sidebar } from '../../components'
 import { DashboardStatCard, InternshipCard, QuickActionCard } from './components'
+import { getProfile, calculateProfileScore } from '../../utils/profileStorage'
+import { useNavigate } from 'react-router-dom'
 
 const sidebarItems = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard, end: true },
@@ -74,13 +76,36 @@ const reveal = {
 }
 
 function Dashboard() {
+  const navigate = useNavigate()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [profile, setProfile] = useState(() => getProfile())
+
+  useEffect(() => {
+    const handleUpdate = () => setProfile(getProfile())
+    window.addEventListener('profile_updated', handleUpdate)
+    return () => window.removeEventListener('profile_updated', handleUpdate)
+  }, [])
+
+  const profileScore = calculateProfileScore(profile)
+  
+  const dynamicStats = [
+    { label: 'Profile Score', value: `${profileScore}%`, growth: '+6%', icon: FileCheck2 },
+    { label: 'Career Score', value: '78', growth: '+4 pts', icon: TrendingUp, accent: 'cyan' },
+    { label: 'Applications Sent', value: String(profile.stats?.applications || 12), growth: '+3', icon: BriefcaseBusiness },
+    { label: 'Saved Internships', value: '8', growth: '+2', icon: Target, accent: 'cyan' },
+  ]
+
   const currentDate = new Intl.DateTimeFormat('en-IN', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   }).format(new Date())
+
+  const handleLogout = () => {
+    localStorage.removeItem('hirehub_session')
+    navigate('/')
+  }
 
   return (
     <MotionConfig reducedMotion="user">
@@ -89,7 +114,8 @@ function Dashboard() {
           items={sidebarItems}
           collapsed={sidebarCollapsed}
           onCollapsedChange={setSidebarCollapsed}
-          user={{ name: 'Abhi', email: 'Frontend Developer' }}
+          user={{ name: profile.name, email: profile.headline }}
+          onLogout={handleLogout}
           className="bg-[#0B1120]/95"
         />
 
@@ -113,7 +139,7 @@ function Dashboard() {
                 <span className="absolute right-2.5 top-2.5 size-1.5 rounded-full bg-[#06B6D4] ring-2 ring-[#111827]" />
               </button>
               <button type="button" aria-label="Open profile menu" className="grid size-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#8B5CF6] to-[#06B6D4] text-sm font-bold shadow-lg shadow-purple-950/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06B6D4] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F172A]">
-                AB
+                {profile.name?.charAt(0)?.toUpperCase()}
               </button>
             </div>
           </header>
@@ -124,7 +150,7 @@ function Dashboard() {
             <motion.section initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="relative mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="flex items-center gap-2 text-sm font-medium text-[#22D3EE]"><CalendarDays className="size-4" aria-hidden="true" />{currentDate}</p>
-                <h1 className="mt-3 text-3xl font-bold tracking-[-0.035em] sm:text-4xl">Good Morning, Abhi <span aria-hidden="true">👋</span></h1>
+                <h1 className="mt-3 text-3xl font-bold tracking-[-0.035em] sm:text-4xl">Good Morning, {profile.name} <span aria-hidden="true">👋</span></h1>
                 <p className="mt-2 text-base text-slate-400">Your career snapshot for today—one focused step at a time.</p>
               </div>
               <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/[0.06] px-4 py-2.5 text-sm text-emerald-300">
@@ -142,7 +168,7 @@ function Dashboard() {
                       <Sparkles className="size-3.5" aria-hidden="true" />AI-powered daily guidance
                     </div>
                     <h2 id="copilot-title" className="mt-5 text-2xl font-bold tracking-tight sm:text-3xl">AI Career Copilot</h2>
-                    <p className="mt-3 max-w-2xl text-base leading-7 text-slate-300">Your profile is <strong className="font-semibold text-white">86% complete.</strong> You’re close to unlocking stronger matches—here’s what will move you forward today.</p>
+                    <p className="mt-3 max-w-2xl text-base leading-7 text-slate-300">Your profile is <strong className="font-semibold text-white">{profileScore}% complete.</strong> You’re close to unlocking stronger matches—here’s what will move you forward today.</p>
                     <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                       <Button leftIcon={Bot} rightIcon={ArrowRight}>Ask AI</Button>
                       <Button variant="secondary" leftIcon={Map}>View Roadmap</Button>
@@ -175,9 +201,10 @@ function Dashboard() {
                 <p className="text-xs text-slate-500">Updated today</p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {stats.map((stat) => <DashboardStatCard key={stat.label} {...stat} />)}
+                {dynamicStats.map((stat) => <DashboardStatCard key={stat.label} {...stat} />)}
               </div>
             </motion.section>
+
 
             <motion.section {...reveal} className="mt-10" aria-labelledby="quick-actions-title">
               <SectionTitle id="quick-actions-title" eyebrow="Move forward" title="Quick Actions" description="The most useful next steps, right where you need them." />

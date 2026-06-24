@@ -205,8 +205,8 @@ function Landing() {
       <Navbar
         links={navLinks}
         activeTo="/#home"
-        onLogin={() => scrollToSection('cta')}
-        onGetStarted={() => navigate('/dashboard')}
+        onLogin={() => navigate('/login?mode=login')}
+        onGetStarted={() => navigate('/login?mode=signup')}
       />
 
       <main>
@@ -227,7 +227,7 @@ function Landing() {
                 Build standout resumes, discover internships that fit, and move forward with an AI career copilot in your corner.
               </motion.p>
               <motion.div variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0, transition: { duration: 0.55 } } }} className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <Button size="lg" rightIcon={ArrowRight} onClick={() => navigate('/dashboard')}>Get Started Free</Button>
+                <Button size="lg" rightIcon={ArrowRight} onClick={() => navigate('/login?mode=signup')}>Get Started Free</Button>
                 <Button size="lg" variant="secondary" onClick={() => scrollToSection('features')}>Explore Features</Button>
               </motion.div>
               <motion.div variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.5 } } }} className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-400 sm:text-sm">
@@ -344,7 +344,7 @@ function Landing() {
               <h2 className="mt-7 text-3xl font-bold tracking-tight sm:text-4xl">Ready to accelerate your career?</h2>
               <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-400 sm:text-lg">Create your profile, sharpen your story, and discover opportunities designed around where you want to go.</p>
               <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-                <Button size="lg" rightIcon={ArrowRight} onClick={() => navigate('/dashboard')}>Create Your Free Profile</Button>
+                <Button size="lg" rightIcon={ArrowRight} onClick={() => navigate('/login?mode=signup')}>Create Your Free Profile</Button>
                 <Button size="lg" variant="secondary" onClick={() => scrollToSection('how-it-works')}>See How It Works</Button>
               </div>
             </div>

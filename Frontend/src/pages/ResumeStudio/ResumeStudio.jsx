@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { MotionConfig, motion } from 'framer-motion'
 import { BookText, Bot, FileText, GraduationCap, LayoutDashboard, Sparkles, Target, UserRound } from 'lucide-react'
 import { Button, Card, SectionTitle, Sidebar } from '../../components'
 import { AISuggestions, ResumeBuilderForm, ResumePreview, ResumeScoreCard } from './components'
+import { getProfile } from '../../utils/profileStorage'
+import { useNavigate } from 'react-router-dom'
 
 const sidebarItems = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
@@ -37,7 +39,51 @@ const reveal = {
 }
 
 function ResumeStudio() {
-  const [resume, setResume] = useState(initialResume)
+  const navigate = useNavigate()
+  const [profile, setProfile] = useState(() => getProfile())
+
+  useEffect(() => {
+    const handleUpdate = () => setProfile(getProfile())
+    window.addEventListener('profile_updated', handleUpdate)
+    return () => window.removeEventListener('profile_updated', handleUpdate)
+  }, [])
+
+  const [resume, setResume] = useState(() => {
+    const flatSkills = Object.values(profile.skills || {}).flat().join(', ')
+    const flatProjects = (profile.projects || [])
+      .map(p => `${p.name} — ${p.desc}`)
+      .join('\n')
+    
+    return {
+      fullName: profile.name || 'Abhi Sharma',
+      email: 'abhi@example.com',
+      phone: '+91 98765 43210',
+      education: `${profile.degree || 'B.Tech CS'}, ${profile.duration || '2024-2028'}\n${profile.college || 'NIT Jaipur'}`,
+      skills: flatSkills || 'React, TypeScript, Tailwind CSS, Node.js',
+      projects: flatProjects || 'HireHub — built an AI-powered platform',
+      experience: 'Frontend Intern at Nova Labs — shipped responsive product flows',
+      achievements: 'AWS Cloud Practitioner\nBuilt 8+ UI projects',
+    }
+  })
+
+  // Watch for profile updates to keep resume fields in sync if profile changes
+  useEffect(() => {
+    const flatSkills = Object.values(profile.skills || {}).flat().join(', ')
+    const flatProjects = (profile.projects || [])
+      .map(p => `${p.name} — ${p.desc}`)
+      .join('\n')
+
+    setResume({
+      fullName: profile.name || 'Abhi Sharma',
+      email: 'abhi@example.com',
+      phone: '+91 98765 43210',
+      education: `${profile.degree || 'B.Tech CS'}, ${profile.duration || '2024-2028'}\n${profile.college || 'NIT Jaipur'}`,
+      skills: flatSkills || 'React, TypeScript, Tailwind CSS, Node.js',
+      projects: flatProjects || 'HireHub — built an AI-powered platform',
+      experience: 'Frontend Intern at Nova Labs — shipped responsive product flows',
+      achievements: 'AWS Cloud Practitioner\nBuilt 8+ UI projects',
+    })
+  }, [profile])
 
   const preview = useMemo(() => resume, [resume])
 
@@ -55,12 +101,18 @@ function ResumeStudio() {
     console.info('Generate Resume', resume)
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('hirehub_session')
+    navigate('/')
+  }
+
   return (
     <MotionConfig reducedMotion="user">
       <div className="flex h-screen overflow-hidden bg-[#0F172A] text-slate-50">
         <Sidebar
           items={sidebarItems}
-          user={{ name: 'Abhi', email: 'Resume Studio' }}
+          user={{ name: profile.name, email: profile.headline }}
+          onLogout={handleLogout}
           className="bg-[#0B1120]/95"
         />
 
