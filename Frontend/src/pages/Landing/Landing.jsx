@@ -1,5 +1,6 @@
+import { useEffect } from 'react'
 import { MotionConfig, motion, useReducedMotion } from 'framer-motion'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import {
   ArrowRight,
   Bot,
@@ -198,6 +199,21 @@ function ProductPreview() {
 
 function Landing() {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace('#', '')
+      const timer = setTimeout(() => {
+        const element = document.getElementById(id)
+        if (element) {
+          const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          element.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' })
+        }
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [location.hash])
 
   return (
     <MotionConfig reducedMotion="user">

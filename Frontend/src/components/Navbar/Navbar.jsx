@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Menu, Sparkles, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Button from '../Button/Button'
 import { cn } from '../utils/cn'
 
@@ -20,6 +20,9 @@ function Navbar({
   className,
 }) {
   const [isOpen, setIsOpen] = useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
+
   const brand = logo ?? (
     <Link to="/" className="flex items-center gap-2 text-lg font-bold tracking-tight text-slate-50">
       <span className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-[#8B5CF6] to-[#06B6D4] shadow-lg shadow-purple-950/30">
@@ -29,13 +32,38 @@ function Navbar({
     </Link>
   )
 
+  const handleLinkClick = (e, to) => {
+    if (to.includes('#')) {
+      const [path, hash] = to.split('#')
+      // Normalize paths
+      const currentPath = location.pathname === '/' ? '' : location.pathname
+      const linkPath = path === '/' ? '' : path
+
+      if (currentPath === linkPath) {
+        e.preventDefault()
+        const element = document.getElementById(hash)
+        if (element) {
+          const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          element.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' })
+          navigate(`${path}#${hash}`, { replace: true })
+        }
+      }
+    }
+    setIsOpen(false)
+  }
+
   return (
     <nav className={cn('sticky top-0 z-50 border-b border-white/10 bg-[#0F172A]/80 backdrop-blur-xl', className)} aria-label="Primary navigation">
       <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {brand}
         <div className="hidden items-center gap-8 md:flex">
           {links.map((link) => (
-            <Link key={link.to} to={link.to} className={cn('rounded-md text-sm font-medium text-slate-300 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06B6D4] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0F172A]', activeTo === link.to && 'text-[#06B6D4]')}>
+            <Link 
+              key={link.to} 
+              to={link.to} 
+              onClick={(e) => handleLinkClick(e, link.to)}
+              className={cn('rounded-md text-sm font-medium text-slate-300 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06B6D4] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0F172A]', activeTo === link.to && 'text-[#06B6D4]')}
+            >
               {link.label}
             </Link>
           ))}
@@ -60,7 +88,12 @@ function Navbar({
           <motion.div id="mobile-primary-navigation" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-t border-white/10 md:hidden">
             <div className="space-y-2 px-4 py-5">
               {links.map((link) => (
-                <Link key={link.to} to={link.to} onClick={() => setIsOpen(false)} className={cn('block rounded-xl px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06B6D4]', activeTo === link.to && 'bg-[#8B5CF6]/10 text-[#06B6D4]')}>
+                <Link 
+                  key={link.to} 
+                  to={link.to} 
+                  onClick={(e) => handleLinkClick(e, link.to)}
+                  className={cn('block rounded-xl px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06B6D4]', activeTo === link.to && 'bg-[#8B5CF6]/10 text-[#06B6D4]')}
+                >
                   {link.label}
                 </Link>
               ))}
