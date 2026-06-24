@@ -20,7 +20,7 @@ import {
   UserRound,
   WandSparkles,
 } from 'lucide-react'
-import { Button, Card, Navbar, SectionTitle } from '../../Components'
+import { Button, Card, Navbar, SectionTitle } from '../../components'
 
 const navLinks = [
   { label: 'Home', to: '/#home' },
