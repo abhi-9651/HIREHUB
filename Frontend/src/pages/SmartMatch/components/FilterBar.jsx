@@ -15,8 +15,18 @@ function FilterBar({
   sortBy,
   onSortByChange,
   onClearFilters,
+  minMatch,
+  onMinMatchChange,
+  minStipend,
+  onMinStipendChange,
 }) {
-  const activeCount = selectedCategories.length + selectedModes.length + (location ? 1 : 0) + (search ? 1 : 0)
+  const activeCount =
+    selectedCategories.length +
+    selectedModes.length +
+    (location ? 1 : 0) +
+    (search ? 1 : 0) +
+    (minMatch > 55 ? 1 : 0) +
+    (minStipend > 0 ? 1 : 0)
 
   return (
     <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[#111827]/80 p-5 shadow-[0_24px_80px_-48px_rgba(76,29,149,0.85)] sm:p-6">
@@ -64,7 +74,7 @@ function FilterBar({
         </div>
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-2">
+      <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         <div>
           <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#06B6D4]">
             <SlidersHorizontal className="size-3.5" aria-hidden="true" />
@@ -108,6 +118,51 @@ function FilterBar({
                 </button>
               )
             })}
+          </div>
+        </div>
+
+        <div>
+          <div className="mb-3 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.18em] text-[#06B6D4]">
+            <span className="flex items-center gap-2">
+              <SlidersHorizontal className="size-3.5" aria-hidden="true" />
+              Skill Match
+            </span>
+            <span className="rounded-full bg-[#8B5CF6]/10 px-2.5 py-0.5 text-[11px] font-bold lowercase tracking-normal text-[#D8B4FE]">
+              {minMatch}%+ fit
+            </span>
+          </div>
+          <div className="flex h-10 items-center px-1">
+            <input
+              type="range"
+              min="55"
+              max="98"
+              value={minMatch}
+              onChange={(event) => onMinMatchChange(Number(event.target.value))}
+              className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-800 accent-[#8B5CF6] focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <div>
+          <div className="mb-3 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.18em] text-[#06B6D4]">
+            <span className="flex items-center gap-2">
+              <SlidersHorizontal className="size-3.5" aria-hidden="true" />
+              Min Stipend
+            </span>
+            <span className="rounded-full bg-[#06B6D4]/10 px-2.5 py-0.5 text-[11px] font-bold tracking-normal text-[#67E8F9]">
+              {minStipend === 0 ? 'Any' : `₹${minStipend / 1000}k+/mo`}
+            </span>
+          </div>
+          <div className="flex h-10 items-center px-1">
+            <input
+              type="range"
+              min="0"
+              max="80000"
+              step="5000"
+              value={minStipend}
+              onChange={(event) => onMinStipendChange(Number(event.target.value))}
+              className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-800 accent-[#06B6D4] focus:outline-none"
+            />
           </div>
         </div>
       </div>

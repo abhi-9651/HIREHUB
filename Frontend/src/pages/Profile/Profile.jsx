@@ -250,28 +250,28 @@ export default function Profile() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:w-auto">
-                        <Card padding="sm" className="bg-[#1E293B]/45">
-                          <p className="text-3xl font-bold text-[#8B5CF6]">{profileScore}%</p>
-                          <p className="text-xs text-slate-400">Profile Score</p>
-                        </Card>
+                      <div className="grid grid-cols-2 gap-x-8 gap-y-6 md:grid-cols-4 lg:w-auto">
+                        <div className="flex flex-col">
+                          <p className="text-3xl font-bold text-[#8B5CF6] tracking-tight">{profileScore}%</p>
+                          <p className="mt-1 text-xs text-slate-400 font-medium">Profile Score</p>
+                        </div>
 
-                        <Card padding="sm" className="bg-[#1E293B]/45">
-                          <p className="text-3xl font-bold text-[#06B6D4]">{profile.stats?.matchRate || 0}%</p>
-                          <p className="text-xs text-slate-400">Match Rate</p>
-                        </Card>
+                        <div className="flex flex-col">
+                          <p className="text-3xl font-bold text-[#06B6D4] tracking-tight">{profile.stats?.matchRate || 0}%</p>
+                          <p className="mt-1 text-xs text-slate-400 font-medium">Match Rate</p>
+                        </div>
 
-                        <Card padding="sm" className="bg-[#1E293B]/45">
-                          <p className="text-3xl font-bold text-[#8B5CF6]">
+                        <div className="flex flex-col">
+                          <p className="text-3xl font-bold text-[#8B5CF6] tracking-tight">
                             {Object.values(profile.skills || {}).flat().length}
                           </p>
-                          <p className="text-xs text-slate-400">Skills Added</p>
-                        </Card>
+                          <p className="mt-1 text-xs text-slate-400 font-medium">Skills Added</p>
+                        </div>
 
-                        <Card padding="sm" className="bg-[#1E293B]/45">
-                          <p className="text-3xl font-bold text-[#06B6D4]">{profile.stats?.applications || 0}</p>
-                          <p className="text-xs text-slate-400">Applications</p>
-                        </Card>
+                        <div className="flex flex-col">
+                          <p className="text-3xl font-bold text-[#06B6D4] tracking-tight">{profile.stats?.applications || 0}</p>
+                          <p className="mt-1 text-xs text-slate-400 font-medium">Applications</p>
+                        </div>
                       </div>
                     </div>
                   </Card>

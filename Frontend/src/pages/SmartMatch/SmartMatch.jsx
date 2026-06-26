@@ -183,6 +183,8 @@ function SmartMatch() {
   const [selectedModes, setSelectedModes] = useState([])
   const [location, setLocation] = useState('')
   const [sortBy, setSortBy] = useState('best')
+  const [minMatch, setMinMatch] = useState(55)
+  const [minStipend, setMinStipend] = useState(0)
   const [profile, setProfile] = useState(() => getProfile())
 
   useEffect(() => {
@@ -221,15 +223,17 @@ function SmartMatch() {
         const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(internship.category)
         const matchesMode = selectedModes.length === 0 || selectedModes.includes(internship.workMode)
         const matchesLocation = !locationQuery || internship.location.toLowerCase().includes(locationQuery)
+        const matchesMinMatch = internship.match >= minMatch
+        const matchesMinStipend = internship.stipendValue >= minStipend
 
-        return matchesQuery && matchesCategory && matchesMode && matchesLocation
+        return matchesQuery && matchesCategory && matchesMode && matchesLocation && matchesMinMatch && matchesMinStipend
       })
       .sort((left, right) => {
         if (sortBy === 'newest') return left.postedDaysAgo - right.postedDaysAgo
         if (sortBy === 'stipend') return right.stipendValue - left.stipendValue
         return right.match - left.match
       })
-  }, [location, search, selectedCategories, selectedModes, sortBy, profile])
+  }, [location, search, selectedCategories, selectedModes, sortBy, profile, minMatch, minStipend])
 
   const clearFilters = () => {
     setSearch('')
@@ -237,6 +241,8 @@ function SmartMatch() {
     setSelectedModes([])
     setLocation('')
     setSortBy('best')
+    setMinMatch(55)
+    setMinStipend(0)
   }
 
   const toggleValue = (values, value, setter) => {
@@ -316,7 +322,11 @@ function SmartMatch() {
                 description="A quick snapshot of how many roles are ready for you right now."
               />
               <div id="match-summary-title" className="mt-6">
-                <MatchSummary />
+                <MatchSummary 
+                  totalMatches={filteredInternships.length}
+                  profileScore={profileScore}
+                  newOpportunitiesCount={filteredInternships.filter(i => i.postedDaysAgo <= 2).length}
+                />
               </div>
             </motion.section>
 
@@ -341,6 +351,10 @@ function SmartMatch() {
                   sortBy={sortBy}
                   onSortByChange={setSortBy}
                   onClearFilters={clearFilters}
+                  minMatch={minMatch}
+                  onMinMatchChange={setMinMatch}
+                  minStipend={minStipend}
+                  onMinStipendChange={setMinStipend}
                 />
               </div>
             </motion.section>

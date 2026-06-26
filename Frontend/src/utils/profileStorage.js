@@ -1,7 +1,7 @@
 const STORAGE_KEY = 'hirehub_profile';
 
 export const DEFAULT_PROFILE = {
-  name: 'Abhi',
+  name: 'Hariom',
   college: 'MMMUT Gorakhpur',
   degree: 'B.Tech Computer Science & Engineering',
   duration: '2024 - 2028',

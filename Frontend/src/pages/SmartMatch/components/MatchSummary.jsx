@@ -1,34 +1,37 @@
 import { BriefcaseBusiness, Sparkles, TrendingUp } from 'lucide-react'
 import { Card } from '../../../components'
 
-const summaryItems = [
-  {
-    value: '128',
-    label: 'AI Matches',
-    description: 'Internships ranked for your current profile.',
-    icon: Sparkles,
-    accent: 'purple',
-  },
-  {
-    value: '86%',
-    label: 'Profile Strength',
-    description: 'You are close to a stronger match score.',
-    icon: TrendingUp,
-    accent: 'cyan',
-  },
-  {
-    value: '24',
-    label: 'New Opportunities',
-    description: 'Fresh listings added in the last 7 days.',
-    icon: BriefcaseBusiness,
-    accent: 'purple',
-  },
-]
+function MatchSummary({ totalMatches = 0, profileScore = 0, newOpportunitiesCount = 0 }) {
+  const summaryItems = [
+    {
+      value: String(totalMatches),
+      label: 'AI Matches',
+      description: 'Internships ranked for your current filters & profile.',
+      icon: Sparkles,
+      accent: 'purple',
+      badge: `showing ${totalMatches} matching roles`,
+    },
+    {
+      value: `${profileScore}%`,
+      label: 'Profile Strength',
+      description: profileScore >= 80 ? 'Excellent! Your profile is highly competitive.' : 'Complete your profile to unlock more matches.',
+      icon: TrendingUp,
+      accent: 'cyan',
+      badge: profileScore >= 80 ? 'Highly optimized' : `${100 - profileScore}% potential growth`,
+    },
+    {
+      value: String(newOpportunitiesCount),
+      label: 'New Opportunities',
+      description: 'Fresh listings added in the last few days.',
+      icon: BriefcaseBusiness,
+      accent: 'purple',
+      badge: `+${newOpportunitiesCount} new listings`,
+    },
+  ]
 
-function MatchSummary() {
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      {summaryItems.map((item, index) => {
+      {summaryItems.map((item) => {
         const cyan = item.accent === 'cyan'
 
         return (
@@ -45,11 +48,9 @@ function MatchSummary() {
             </div>
             <p className="relative mt-4 max-w-sm text-sm leading-6 text-slate-400">{item.description}</p>
             <div className="relative mt-5 flex items-center gap-2 text-xs font-medium text-emerald-400">
-                <span className="size-1.5 rounded-full bg-emerald-400" />
-                {index === 0 && '+12 new matches this week'}
-                {index === 1 && '+4% profile improvement'}
-                {index === 2 && '+24 opportunities added'}
-             </div>
+              <span className="size-1.5 rounded-full bg-emerald-400" />
+              {item.badge}
+            </div>
           </Card>
         )
       })}
