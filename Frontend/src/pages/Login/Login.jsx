@@ -4,7 +4,6 @@ import { MotionConfig, motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, Mail, Lock, User, GraduationCap, ArrowRight, AlertCircle } from 'lucide-react'
 import { Button, Card, Input } from '../../components'
 import { getProfile, saveProfile, DEFAULT_PROFILE } from '../../utils/profileStorage'
-import api from '../../utils/api'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -62,9 +61,11 @@ export default function Login() {
 
     setIsLoading(true)
     
+    // Simulate API network request latency
     setTimeout(() => {
       try {
         if (isSignUp) {
+          // On SignUp, initialize the user's custom profile
           const currentProfile = getProfile()
           const customProfile = {
             ...currentProfile,
@@ -78,26 +79,20 @@ export default function Login() {
           }
           saveProfile(customProfile)
         } else {
+          // On SignIn, fallback/create default if not already initialized
           const currentProfile = getProfile()
           if (currentProfile.name === 'Abhi' && name) {
             saveProfile({ ...currentProfile, name })
           }
         }
 
+        // Set login session
         localStorage.setItem('hirehub_session', JSON.stringify({
           email: email.trim().toLowerCase(),
-          name: isSignUp ? name.trim() : (getProfile().name || 'User'),
-          token: 'mock_token'
+          name: isSignUp ? name.trim() : (getProfile().name || 'User')
         }))
 
-        api.get('/profile')
-          .then(res => {
-            saveProfile(res.data);
-          })
-          .catch(err => {
-            console.error('Initial profile sync failed:', err);
-          });
-
+        // Redirect to dashboard
         navigate('/dashboard')
       } catch (err) {
         setError('Authentication failed. Please try again.')

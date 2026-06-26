@@ -17,9 +17,8 @@ import {
 import { Button, Card, SectionTitle, Sidebar } from '../../components'
 import InternshipCard from '../Dashboard/components/InternshipCard'
 import { FilterBar, MatchSummary } from './components'
-import { getProfile, calculateProfileScore, syncProfileWithBackend } from '../../utils/profileStorage'
+import { getProfile, calculateProfileScore } from '../../utils/profileStorage'
 import { useNavigate } from 'react-router-dom'
-import api from '../../utils/api'
 
 const sidebarItems = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard, end: true },
@@ -185,36 +184,38 @@ function SmartMatch() {
   const [location, setLocation] = useState('')
   const [sortBy, setSortBy] = useState('best')
   const [profile, setProfile] = useState(() => getProfile())
-  const [internshipsList, setInternshipsList] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const handleUpdate = () => setProfile(getProfile())
     window.addEventListener('profile_updated', handleUpdate)
-    syncProfileWithBackend()
     return () => window.removeEventListener('profile_updated', handleUpdate)
   }, [])
-
-  useEffect(() => {
-    api.get('/internships/match')
-      .then(res => {
-        setInternshipsList(res.data)
-        setIsLoading(false)
-      })
-      .catch(err => {
-        console.error('Error fetching matched internships:', err)
-        setInternshipsList(internships)
-        setIsLoading(false)
-      })
-  }, [profile])
 
   const profileScore = calculateProfileScore(profile)
 
   const filteredInternships = useMemo(() => {
     const query = search.trim().toLowerCase()
     const locationQuery = location.trim().toLowerCase()
+    
+    // Parse user skills
+    const userSkills = Object.values(profile.skills || {}).flat().map(s => s.toLowerCase().trim())
 
-    return internshipsList
+    return internships
+      .map((internship) => {
+        // Calculate dynamic match score based on user skills vs internship skills
+        const matchingSkills = internship.skills.filter(skill => 
+          userSkills.some(us => us.includes(skill.toLowerCase()) || skill.toLowerCase().includes(us))
+        )
+        // Match rate floor is 55%, ceiling is 98%
+        const matchPercentage = internship.skills.length > 0 
+          ? 55 + Math.round((matchingSkills.length / internship.skills.length) * 43) 
+          : 55
+        
+        return {
+          ...internship,
+          match: matchPercentage
+        }
+      })
       .filter((internship) => {
         const matchesQuery = !query || [internship.title, internship.company, internship.location, ...internship.skills].some((value) => value.toLowerCase().includes(query))
         const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(internship.category)
@@ -228,7 +229,7 @@ function SmartMatch() {
         if (sortBy === 'stipend') return right.stipendValue - left.stipendValue
         return right.match - left.match
       })
-  }, [location, search, selectedCategories, selectedModes, sortBy, internshipsList])
+  }, [location, search, selectedCategories, selectedModes, sortBy, profile])
 
   const clearFilters = () => {
     setSearch('')

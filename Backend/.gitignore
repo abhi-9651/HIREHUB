@@ -1,7 +1,0 @@
-node_modules/
-.env
-data/users.json
-data/profiles.json
-data/resumes.json
-data/*.tmp
-*.log

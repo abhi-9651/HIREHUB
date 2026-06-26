@@ -22,7 +22,7 @@ import {
 } from 'lucide-react'
 import { Button, Card, Input, SectionTitle, Sidebar } from '../../components'
 import { DashboardStatCard, InternshipCard, QuickActionCard } from './components'
-import { getProfile, calculateProfileScore, syncProfileWithBackend } from '../../utils/profileStorage'
+import { getProfile, calculateProfileScore } from '../../utils/profileStorage'
 import { useNavigate } from 'react-router-dom'
 
 const sidebarItems = [
@@ -83,7 +83,6 @@ function Dashboard() {
   useEffect(() => {
     const handleUpdate = () => setProfile(getProfile())
     window.addEventListener('profile_updated', handleUpdate)
-    syncProfileWithBackend()
     return () => window.removeEventListener('profile_updated', handleUpdate)
   }, [])
 
@@ -163,16 +162,16 @@ function Dashboard() {
               <Card padding="none" className="relative isolate overflow-hidden border-[#8B5CF6]/25 bg-[#111827]/80 p-6 shadow-[0_32px_90px_-46px_rgba(76,29,149,0.85)] sm:p-8 lg:p-10">
                 <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_85%_20%,rgba(6,182,212,0.15),transparent_32%),radial-gradient(circle_at_15%_0%,rgba(139,92,246,0.22),transparent_42%)]" />
                 <div className="absolute inset-0 -z-10 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:linear-gradient(to_right,black,transparent)]" />
-                <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+                <div className="grid gap-8 xl:grid-cols-[1.1fr_0.9fr] xl:items-center">
                   <div>
                     <div className="inline-flex items-center gap-2 rounded-full border border-[#8B5CF6]/25 bg-[#8B5CF6]/10 px-3 py-1.5 text-xs font-semibold text-[#C4B5FD]">
                       <Sparkles className="size-3.5" aria-hidden="true" />AI-powered daily guidance
                     </div>
                     <h2 id="copilot-title" className="mt-5 text-2xl font-bold tracking-tight sm:text-3xl">AI Career Copilot</h2>
                     <p className="mt-3 max-w-2xl text-base leading-7 text-slate-300">Your profile is <strong className="font-semibold text-white">{profileScore}% complete.</strong> You’re close to unlocking stronger matches—here’s what will move you forward today.</p>
-                    <div className="mt-7 flex flex-col md:flex-row gap-3">
-                      <Button leftIcon={Bot} rightIcon={ArrowRight} onClick={() => navigate('/career-copilot')} className="w-full md:w-auto">Ask AI</Button>
-                      <Button variant="secondary" leftIcon={Map} onClick={() => navigate('/career-copilot')} className="w-full md:w-auto">View Roadmap</Button>
+                    <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                      <Button leftIcon={Bot} rightIcon={ArrowRight}>Ask AI</Button>
+                      <Button variant="secondary" leftIcon={Map}>View Roadmap</Button>
                     </div>
                   </div>
 

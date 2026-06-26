@@ -3,8 +3,7 @@ import { MotionConfig, motion } from 'framer-motion'
 import { BookText, Bot, FileText, GraduationCap, LayoutDashboard, Sparkles, Target, UserRound } from 'lucide-react'
 import { Button, Card, SectionTitle, Sidebar } from '../../components'
 import { AISuggestions, ResumeBuilderForm, ResumePreview, ResumeScoreCard } from './components'
-import { getProfile, syncProfileWithBackend } from '../../utils/profileStorage'
-import api from '../../utils/api'
+import { getProfile } from '../../utils/profileStorage'
 import { useNavigate } from 'react-router-dom'
 
 const sidebarItems = [
@@ -26,8 +25,7 @@ const initialResume = {
   achievements: 'Hackathon finalist\nAWS Cloud Practitioner badge\nBuilt 8+ UI projects',
 }
 
-// Default mockup cards template
-const initialScoreCards = [
+const scoreCards = [
   { label: 'Resume Score', value: '86%', change: '+6%', icon: BookText },
   { label: 'ATS Compatibility', value: '92%', change: '+8%', icon: Sparkles, accent: 'cyan' },
   { label: 'Skill Relevance', value: '84%', change: '+5%', icon: GraduationCap },
@@ -87,48 +85,6 @@ function ResumeStudio() {
     })
   }, [profile])
 
-  const [scoreCardsState, setScoreCardsState] = useState(initialScoreCards)
-  const [saveStatus, setSaveStatus] = useState('')
-
-  const fetchResumeAndScores = async () => {
-    try {
-      const resumeRes = await api.get('/resumes');
-      if (resumeRes.data) {
-        setResume(resumeRes.data);
-        const scoreRes = await api.post('/resumes/score', resumeRes.data);
-        updateScoreCards(scoreRes.data.scores);
-      }
-    } catch (err) {
-      console.error('Error loading resume/scores:', err);
-    }
-  };
-
-  const updateScoreCards = (scores) => {
-    const mapped = scores.map(s => {
-      let icon = BookText;
-      let accent = undefined;
-      if (s.type === 'ats') {
-        icon = Sparkles;
-        accent = 'cyan';
-      } else if (s.type === 'skill') {
-        icon = GraduationCap;
-      }
-      return {
-        label: s.label,
-        value: s.value,
-        change: s.change,
-        icon,
-        accent
-      };
-    });
-    setScoreCardsState(mapped);
-  };
-
-  useEffect(() => {
-    syncProfileWithBackend();
-    fetchResumeAndScores();
-  }, []);
-
   const preview = useMemo(() => resume, [resume])
 
   const updateField = (field, value) => {
@@ -136,23 +92,13 @@ function ResumeStudio() {
   }
 
   const onSaveDraft = () => {
-    setSaveStatus('Saving...')
-    api.post('/resumes', resume)
-      .then(() => {
-        setSaveStatus('Saved!')
-        setTimeout(() => setSaveStatus(''), 2000)
-        api.post('/resumes/score', resume)
-          .then(res => updateScoreCards(res.data.scores))
-          .catch(err => console.error('Error fetching scores:', err));
-      })
-      .catch(err => {
-        console.error('Error saving draft:', err)
-        setSaveStatus('Error saving')
-      })
+    // Future backend integration hook.
+    console.info('Save Draft', resume)
   }
 
   const onGenerateResume = () => {
-    onSaveDraft()
+    // Future backend integration hook.
+    console.info('Generate Resume', resume)
   }
 
   const handleLogout = () => {
@@ -178,7 +124,7 @@ function ResumeStudio() {
                 <p className="mt-0.5 text-xs text-slate-500">Builder, preview, and AI analysis in one place</p>
               </div>
               <div className="rounded-xl border border-[#8B5CF6]/20 bg-[#8B5CF6]/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#D8B4FE]">
-                {saveStatus || 'Changes Saved to Server'}
+                Auto-saving disabled for mock mode
               </div>
             </div>
           </header>
@@ -202,7 +148,7 @@ function ResumeStudio() {
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[480px]">
-                  {scoreCardsState.map((card) => (
+                  {scoreCards.map((card) => (
                     <ResumeScoreCard key={card.label} {...card} />
                   ))}
                 </div>

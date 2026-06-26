@@ -1,5 +1,3 @@
-import api from './api';
-
 const STORAGE_KEY = 'hirehub_profile';
 
 export const DEFAULT_PROFILE = {
@@ -46,15 +44,18 @@ export function calculateProfileScore(profile) {
   if (profile.bio?.trim()) filledFields++;
   if (profile.duration?.trim()) filledFields++;
   
+  // Check goals
   if (profile.goals && Object.values(profile.goals).some(val => val?.trim())) {
     filledFields++;
   } else {
     totalFields--;
   }
 
+  // Check skills
   const totalSkillsCount = Object.values(profile.skills || {}).flat().length;
   if (totalSkillsCount > 0) filledFields++;
 
+  // Check projects
   if (profile.projects && profile.projects.length > 0) filledFields++;
 
   return Math.round((filledFields / totalFields) * 100);
@@ -67,6 +68,7 @@ export function getProfile() {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     if (!data) {
+      // Save default profile so it's initialized
       saveProfile(DEFAULT_PROFILE);
       return DEFAULT_PROFILE;
     }
@@ -79,40 +81,14 @@ export function getProfile() {
 }
 
 /**
- * Saves the profile to localStorage and syncs with backend in the background
+ * Saves the profile to localStorage
  */
 export function saveProfile(profile) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+    // Dispatch custom event to notify other components/pages
     window.dispatchEvent(new Event('profile_updated'));
-
-    const session = localStorage.getItem('hirehub_session');
-    if (session) {
-      api.put('/profile', profile)
-        .then(res => {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(res.data));
-        })
-        .catch(err => {
-          console.error('Error syncing profile with backend:', err);
-        });
-    }
   } catch (error) {
     console.error('Error saving profile to localStorage', error);
-  }
-}
-
-/**
- * Syncs the profile from the backend to local storage cache
- */
-export async function syncProfileWithBackend() {
-  const session = localStorage.getItem('hirehub_session');
-  if (!session) return;
-  try {
-    const res = await api.get('/profile');
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(res.data));
-    window.dispatchEvent(new Event('profile_updated'));
-    return res.data;
-  } catch (error) {
-    console.error('Error syncing profile from backend:', error);
   }
 }

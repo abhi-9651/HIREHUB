@@ -13,22 +13,22 @@ export default function Hero({ profileScore, nextMilestone, onAskCopilotClick, o
           <p className="mt-2 text-sm text-slate-300">
             Ask questions, get practical steps, and follow a roadmap tailored to your profile and goals.
           </p>
-          <div className="mt-4 flex flex-col md:flex-row gap-3">
-            <Button leftIcon={Bot} onClick={onAskCopilotClick} className="w-full md:w-auto">Ask Copilot</Button>
-            <Button variant="secondary" rightIcon={ArrowRight} onClick={onViewRoadmapClick} className="w-full md:w-auto">View Roadmap</Button>
+          <div className="mt-4 flex gap-3">
+            <Button leftIcon={Bot} onClick={onAskCopilotClick}>Ask Copilot</Button>
+            <Button variant="secondary" rightIcon={ArrowRight} onClick={onViewRoadmapClick}>View Roadmap</Button>
           </div>
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-[#0F172A]/70 p-5 shadow-inner">
           <p className="text-sm font-semibold text-slate-200 border-b border-white/[0.06] pb-2">Quick snapshot</p>
-          <div className="mt-4 grid grid-cols-2 gap-4">
+          <div className="mt-4 flex items-center justify-between gap-4">
             <div>
               <p className="text-xs text-slate-400">Profile completeness</p>
               <p className="text-xl font-bold text-[#06B6D4] mt-1">{profileScore}%</p>
             </div>
             <div className="border-l border-white/[0.08] pl-4">
               <p className="text-xs text-slate-400">Next milestone</p>
-              <p className="text-sm font-semibold text-slate-200 mt-1 leading-snug" title={nextMilestone}>
+              <p className="text-sm font-semibold text-slate-200 mt-1 truncate max-w-[150px]" title={nextMilestone}>
                 {nextMilestone}
               </p>
             </div>
