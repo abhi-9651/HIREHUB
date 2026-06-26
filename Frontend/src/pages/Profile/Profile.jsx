@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 
 import { Button, Card, Input, SectionTitle, Sidebar } from '../../components'
-import { getProfile, saveProfile, calculateProfileScore } from '../../utils/profileStorage'
+import { getProfile, saveProfile, calculateProfileScore, syncProfileWithBackend } from '../../utils/profileStorage'
 
 const sidebarItems = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
@@ -54,17 +54,23 @@ export default function Profile() {
   
   const [showSuccessToast, setShowSuccessToast] = useState(false)
 
-  // Load profile on mount
   useEffect(() => {
     const loadedProfile = getProfile()
     setProfile(loadedProfile)
     
-    // Check if ?edit=true is present in URL
     if (searchParams.get('edit') === 'true') {
       setIsEditing(true)
       initEditState(loadedProfile)
     }
   }, [searchParams])
+
+  useEffect(() => {
+    syncProfileWithBackend().then(p => {
+      if (p) {
+        setProfile(p)
+      }
+    })
+  }, [])
 
   const initEditState = (sourceProfile) => {
     const copy = JSON.parse(JSON.stringify(sourceProfile))

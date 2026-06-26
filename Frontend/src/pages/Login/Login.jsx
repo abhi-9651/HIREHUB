@@ -4,6 +4,7 @@ import { MotionConfig, motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, Mail, Lock, User, GraduationCap, ArrowRight, AlertCircle } from 'lucide-react'
 import { Button, Card, Input } from '../../components'
 import { getProfile, saveProfile, DEFAULT_PROFILE } from '../../utils/profileStorage'
+import api from '../../utils/api'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -61,45 +62,52 @@ export default function Login() {
 
     setIsLoading(true)
     
-    // Simulate API network request latency
-    setTimeout(() => {
-      try {
-        if (isSignUp) {
-          // On SignUp, initialize the user's custom profile
-          const currentProfile = getProfile()
-          const customProfile = {
-            ...currentProfile,
-            name: name,
-            college: college.trim() || DEFAULT_PROFILE.college,
-            degree: degree.trim() || DEFAULT_PROFILE.degree,
-            stats: {
-              matchRate: 85,
-              applications: 0
-            }
-          }
-          saveProfile(customProfile)
-        } else {
-          // On SignIn, fallback/create default if not already initialized
-          const currentProfile = getProfile()
-          if (currentProfile.name === 'Abhi' && name) {
-            saveProfile({ ...currentProfile, name })
-          }
-        }
-
-        // Set login session
+    try {
+      if (isSignUp) {
+        const response = await api.post('/auth/signup', {
+          name: name.trim(),
+          email: email.trim(),
+          password: password,
+          college: college.trim(),
+          degree: degree.trim()
+        });
+        
+        const { token, user } = response.data;
+        
         localStorage.setItem('hirehub_session', JSON.stringify({
-          email: email.trim().toLowerCase(),
-          name: isSignUp ? name.trim() : (getProfile().name || 'User')
-        }))
-
-        // Redirect to dashboard
-        navigate('/dashboard')
-      } catch (err) {
-        setError('Authentication failed. Please try again.')
-      } finally {
-        setIsLoading(false)
+          email: user.email,
+          name: user.name,
+          token: token
+        }));
+        
+        const profileRes = await api.get('/profile');
+        saveProfile(profileRes.data);
+      } else {
+        const response = await api.post('/auth/login', {
+          email: email.trim(),
+          password: password
+        });
+        
+        const { token, user } = response.data;
+        
+        localStorage.setItem('hirehub_session', JSON.stringify({
+          email: user.email,
+          name: user.name,
+          token: token
+        }));
+        
+        const profileRes = await api.get('/profile');
+        saveProfile(profileRes.data);
       }
-    }, 800)
+
+      navigate('/dashboard')
+    } catch (err) {
+      console.error('Auth error:', err);
+      const errMsg = err.response?.data?.message || 'Authentication failed. Please check your credentials and try again.';
+      setError(errMsg);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const toggleMode = () => {

@@ -5,7 +5,7 @@ import { Hero, ChatInterface, SuggestedPrompts, SkillGapAnalysis, WeeklyGoals, C
 import { useState, useEffect } from 'react'
 import { getProfile, saveProfile, calculateProfileScore } from '../../utils/profileStorage'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../../utils/api'
 
 
 const reveal = { initial: { opacity: 0, y: 12 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, amount: 0.12 }, transition: { duration: 0.45 } }
@@ -92,15 +92,8 @@ export default function CareerCopilot() {
     setMessages((prev) => [...prev, userMsg])
     setIsTyping(true)
 
-    const currentMissing = getMissingSkills()
-    const currentCompleteness = calculateProfileScore(profile)
-    const eduInfo = `${profile.degree || 'B.Tech CSE'} from ${profile.college || 'College'} (${profile.duration || '2024-2028'})`
     const targetRole = profile.goals?.targetRole || 'Software Engineer'
     const name = profile.name || 'User'
-
-    const rawApiKey = import.meta.env.VITE_GEMINI_API_KEY
-    const apiKey = rawApiKey ? rawApiKey.replace(/^["']|["']$/g, '').trim() : ''
-    const isRealAPI = apiKey && apiKey !== 'YOUR_GEMINI_API_KEY_HERE' && !apiKey.startsWith('YOUR_') && !apiKey.startsWith('OUR_')
 
     // Run mockup fallback
     const runMockupFallback = (query) => {
@@ -439,148 +432,18 @@ For your goal of becoming a **${targetRole}**:
       setMessages((prev) => [...prev, { id: Date.now() + 1, from: 'bot', text: reply }])
     }
 
-    if (isRealAPI) {
-      const systemInstructionText = `You are Career Copilot, an elite AI Career Mentor, Tech Industry Analyst, Startup Advisor, and Learning Coach.
-Your goal is to help users make better career decisions, learn in-demand skills, build projects, get internships/jobs, launch startups, and stay ahead of technology trends.
-You provide highly practical, actionable, and personalized guidance rather than generic advice.
-
-━━━━━━━━━━━━━━━━━━━━━━
-USER PROFILE CONTEXT (Personalize responses based on this)
-━━━━━━━━━━━━━━━━━━━━━━
-- Name: ${name}
-- Education: ${eduInfo}
-- Current Skills: ${(profile.skills?.Frontend || []).concat(profile.skills?.Backend || []).concat(profile.skills?.Programming || []).join(', ') || 'React, Node.js, DSA'}
-- Missing Skills (Identified Gaps): ${currentMissing.join(', ')}
-- Goal: Target Role: ${targetRole}, Domain: ${profile.goals?.preferredDomain || 'Full Stack'}, workPreference: ${profile.goals?.workPreference || 'Remote / Hybrid'}
-- Profile Completeness: ${currentCompleteness}%
-
-━━━━━━━━━━━━━━━━━━━━━━
-YOUR RESPONSIBILITIES
-━━━━━━━━━━━━━━━━━━━━━━
-When users ask about careers, roadmaps, startups, jobs, technologies, skills, salaries, market demand, learning paths, projects, or future opportunities:
-1. Explain concepts clearly.
-2. Provide structured roadmaps.
-3. Break goals into actionable steps.
-4. Recommend projects.
-5. Suggest learning resources.
-6. Explain market demand.
-7. Highlight future trends.
-8. Estimate realistic timelines.
-9. Suggest portfolio improvements.
-10. Create personalized plans whenever possible.
-
-━━━━━━━━━━━━━━━━━━━━━━
-RESPONSE FORMATS
-━━━━━━━━━━━━━━━━━━━━━━
-Follow these format structures exactly based on query types:
-
-[ROADMAP RESPONSE FORMAT] (When user asks for roadmap or career path)
-# Overview
-• What the role does, why it matters, market demand, future scope
-# Skills Required
-• Core skills, tools, frameworks, technologies
-# Learning Roadmap
-## Phase 1: Foundations (Topics)
-## Phase 2: Intermediate Skills (Topics)
-## Phase 3: Advanced Skills (Topics)
-## Phase 4: Real-World Applications (Topics)
-## Phase 5: Industry Readiness (Topics)
-# Recommended Projects
-### Beginner (3 projects)
-### Intermediate (3 projects)
-### Advanced (3 projects)
-# Portfolio Requirements
-# Common Mistakes
-# Interview Preparation
-# Timeline
-# Next 30 Days Plan (Week-by-week action plan)
-
-[AI ENGINEER ROADMAP FORMAT] (When user uses specific keyword like "Ai engineer roadmaps" or asks about AI Engineering roadmap: include Python, ML, DL, NLP, CV, LLMs, Prompt Engineering, RAG, Vector DBs, AI Agents, LangChain, MCP, Fine-Tuning, MLOps, deployment, cloud, salary and hiring trends)
-
-[MERN STACK DEVELOPER ROADMAP FORMAT] (When user uses specific keyword like "Mern Stack" or asks about MERN stack developer roadmap: include MongoDB, Express, React, Node.js, frontend, backend, tools, database, testing, projects, salary, hiring trends, and next 30 days plan)
-
-[DEVELOPER ROADMAP FORMAT] (For General Full Stack, Frontend, Backend, Mobile, DevOps, Cloud)
-Provide: Role Overview, Skills Required, Learning Path, Project Roadmap, Portfolio Requirements, Open Source Strategy, Internship Strategy, Interview Preparation, Salary Expectations, Hiring Trends, Timeline
-
-[STARTUP ROADMAP FORMAT] (When asked about startups)
-Provide: Idea Validation, Market Analysis, MVP Plan, Build Roadmap (Weeks 1-4), Monetization, Marketing, Risks, Next Steps
-
-[JOB MARKET ANALYSIS] (When asked 'What jobs are in demand?', 'What should I learn?', 'Which career is future-proof?')
-Provide: Demand score (/10), Difficulty score (/10), Salary potential (/10), Competition level, Remote opportunities, AI impact risk, Future growth potential, and rank the top options using tables.
-
-━━━━━━━━━━━━━━━━━━━━━━
-COMMUNICATION STYLE
-━━━━━━━━━━━━━━━━━━━━━━
-- Be practical and realistic. Prioritize execution.
-- Use markdown tables where helpful.
-- Explain jargon simply and give step-by-step guidance.
-- Think like a mentor, recruiter, hiring manager, startup founder, and tech expert simultaneously.`
-
-      if (apiKey.startsWith('gsk_')) {
-        const groqMessages = [
-          { role: 'system', content: systemInstructionText },
-          ...messages.map(msg => ({
-            role: msg.from === 'bot' ? 'assistant' : 'user',
-            content: msg.text
-          })),
-          { role: 'user', content: text }
-        ]
-
-        axios.post('https://api.groq.com/openai/v1/chat/completions', {
-          model: 'llama-3.3-70b-versatile',
-          messages: groqMessages,
-          temperature: 0.7
-        }, {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-          }
-        })
-          .then(res => {
-            setIsTyping(false)
-            const replyText = res.data?.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response."
-            setMessages((prev) => [...prev, { id: Date.now() + 1, from: 'bot', text: replyText }])
-          })
-          .catch(err => {
-            console.error("Groq API call failed, falling back to mockup:", err)
-            setTimeout(() => {
-              runMockupFallback(text)
-            }, 600)
-          })
-      } else {
-        const contents = messages.map(msg => ({
-          role: msg.from === 'bot' ? 'model' : 'user',
-          parts: [{ text: msg.text }]
-        }))
-
-        contents.push({
-          role: 'user',
-          parts: [{ text }]
-        })
-
-        axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-          systemInstruction: {
-            parts: [{ text: systemInstructionText }]
-          },
-          contents: contents
-        })
-          .then(res => {
-            setIsTyping(false)
-            const replyText = res.data?.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't generate a response."
-            setMessages((prev) => [...prev, { id: Date.now() + 1, from: 'bot', text: replyText }])
-          })
-          .catch(err => {
-            console.error("Gemini API call failed, falling back to mockup:", err)
-            setTimeout(() => {
-              runMockupFallback(text)
-            }, 600)
-          })
-      }
-    } else {
-      setTimeout(() => {
-        runMockupFallback(text)
-      }, 1000)
-    }
+    api.post('/copilot/chat', { messages, text })
+      .then(res => {
+        setIsTyping(false)
+        const replyText = res.data?.reply || "Sorry, I couldn't generate a response."
+        setMessages((prev) => [...prev, { id: Date.now() + 1, from: 'bot', text: replyText }])
+      })
+      .catch(err => {
+        console.error("Copilot chat request failed:", err)
+        setTimeout(() => {
+          runMockupFallback(text)
+        }, 600)
+      })
   }
 
   // Handle header search
