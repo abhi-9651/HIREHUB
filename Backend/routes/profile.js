@@ -8,9 +8,22 @@ router.get('/', auth, async (req, res) => {
   try {
     const userId = req.user.id;
     const users = await db.getUsers();
-    const user = users.find(u => u.id === userId);
+    let user = users.find(u => u.id === userId);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      if (userId === 'default_user') {
+        user = {
+          id: 'default_user',
+          name: 'Abhi',
+          email: 'abhi@example.com',
+          college: 'MMMUT Gorakhpur',
+          degree: 'B.Tech Computer Science & Engineering',
+          createdAt: new Date().toISOString()
+        };
+        users.push(user);
+        await db.saveUsers(users);
+      } else {
+        return res.status(404).json({ message: 'User not found' });
+      }
     }
 
     const profiles = await db.getProfiles();
@@ -50,9 +63,22 @@ router.put('/', auth, async (req, res) => {
     const { name, college, degree, headline, bio, duration, skills, projects, goals, stats } = req.body;
 
     const users = await db.getUsers();
-    const userIndex = users.findIndex(u => u.id === userId);
+    let userIndex = users.findIndex(u => u.id === userId);
     if (userIndex === -1) {
-      return res.status(404).json({ message: 'User not found' });
+      if (userId === 'default_user') {
+        users.push({
+          id: 'default_user',
+          name: 'Abhi',
+          email: 'abhi@example.com',
+          college: 'MMMUT Gorakhpur',
+          degree: 'B.Tech Computer Science & Engineering',
+          createdAt: new Date().toISOString()
+        });
+        userIndex = users.length - 1;
+        await db.saveUsers(users);
+      } else {
+        return res.status(404).json({ message: 'User not found' });
+      }
     }
 
     if (name !== undefined) users[userIndex].name = name;

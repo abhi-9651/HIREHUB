@@ -18,9 +18,40 @@ router.get('/match', auth, async (req, res) => {
   try {
     const userId = req.user.id;
     const profiles = await db.getProfiles();
-    const profile = profiles.find(p => p.userId === userId);
+    let profile = profiles.find(p => p.userId === userId);
     if (!profile) {
-      return res.status(404).json({ message: 'Profile not found' });
+      if (userId === 'default_user') {
+        profile = {
+          userId,
+          headline: 'Aspiring Software Engineer',
+          bio: 'Building full-stack web applications, solving DSA problems, and preparing for internship opportunities.',
+          skills: {
+            Frontend: ['HTML', 'CSS', 'JavaScript', 'React', 'Tailwind'],
+            Backend: ['Node.js', 'Express', 'MongoDB'],
+            Programming: ['C++', 'Java', 'DSA', 'Git']
+          },
+          projects: [
+            { name: 'HireHub', desc: 'AI-powered internship discovery platform.' },
+            { name: 'EduSmaran', desc: 'Smart attendance and curriculum planner.' },
+            { name: 'Career Copilot', desc: 'AI-guided career assistant dashboard.' },
+            { name: 'Resume Studio', desc: 'ATS-friendly resume builder.' }
+          ],
+          goals: {
+            targetRole: 'Software Engineer',
+            preferredDomain: 'Full Stack Development',
+            workPreference: 'Remote / Hybrid',
+            expectedStipend: '₹20k+'
+          },
+          stats: {
+            matchRate: 85,
+            applications: 0
+          }
+        };
+        profiles.push(profile);
+        await db.saveProfiles(profiles);
+      } else {
+        return res.status(404).json({ message: 'Profile not found' });
+      }
     }
 
     const internships = await db.getInternships();
