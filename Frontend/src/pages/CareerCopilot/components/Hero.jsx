@@ -15,24 +15,14 @@ export default function Hero({ profileScore, nextMilestone, onAskCopilotClick, o
           </p>
           <div className="mt-4 flex gap-3">
             <Button leftIcon={Bot} onClick={onAskCopilotClick}>Ask Copilot</Button>
-            <Button variant="secondary" rightIcon={ArrowRight} onClick={onViewRoadmapClick}>View Roadmap</Button>
           </div>
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-[#0F172A]/70 p-5 shadow-inner">
-          <p className="text-sm font-semibold text-slate-200 border-b border-white/[0.06] pb-2">Quick snapshot</p>
-          <div className="mt-4 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs text-slate-400">Profile completeness</p>
-              <p className="text-xl font-bold text-[#06B6D4] mt-1">{profileScore}%</p>
-            </div>
-            <div className="border-l border-white/[0.08] pl-4">
-              <p className="text-xs text-slate-400">Next milestone</p>
-              <p className="text-sm font-semibold text-slate-200 mt-1 truncate max-w-[150px]" title={nextMilestone}>
-                {nextMilestone}
-              </p>
-            </div>
-          </div>
+          <p className="text-sm font-semibold text-slate-200 border-b border-white/[0.06] pb-2">Next Milestone</p>
+          <p className="text-base font-semibold text-slate-200 mt-3 leading-relaxed" title={nextMilestone}>
+            {nextMilestone}
+          </p>
         </div>
       </div>
     </Card>

@@ -43,8 +43,8 @@ const stats = [
 const quickActions = [
   { title: 'Generate Resume', description: 'Create a tailored resume with AI.', to: '/resume-studio', icon: WandSparkles },
   { title: 'Find Internships', description: 'See roles matched to your profile.', to: '/internships', icon: Search, accent: 'cyan' },
-  { title: 'Ask Copilot', description: 'Get instant, personal career guidance.', to: '/career-copilot', icon: Bot },
-  { title: 'Career Roadmap', description: 'Review your next learning milestones.', to: '/roadmap', icon: Map, accent: 'cyan' },
+  { title: 'Ask Copilot', description: 'Get instant, personal career guidance.', to: '/career-copilot', state: { scrollToChat: true }, icon: Bot },
+  { title: 'Career Roadmap', description: 'Review your next learning milestones.', to: '/career-copilot', state: { scrollToRoadmap: true }, icon: Map, accent: 'cyan' },
 ]
 
 const internships = [
@@ -170,8 +170,7 @@ function Dashboard() {
                     <h2 id="copilot-title" className="mt-5 text-2xl font-bold tracking-tight sm:text-3xl">AI Career Copilot</h2>
                     <p className="mt-3 max-w-2xl text-base leading-7 text-slate-300">Your profile is <strong className="font-semibold text-white">{profileScore}% complete.</strong> You’re close to unlocking stronger matches—here’s what will move you forward today.</p>
                     <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                      <Button leftIcon={Bot} rightIcon={ArrowRight}>Ask AI</Button>
-                      <Button variant="secondary" leftIcon={Map}>View Roadmap</Button>
+                      <Button leftIcon={Bot} rightIcon={ArrowRight} onClick={() => navigate('/career-copilot', { state: { scrollToChat: true } })}>Ask AI</Button>
                     </div>
                   </div>
 

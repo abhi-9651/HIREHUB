@@ -1,10 +1,10 @@
 import { MotionConfig, motion } from 'framer-motion'
-import { Bot, MessageSquare, Sparkles, Map, Clock3, Check, Zap } from 'lucide-react'
+import { Bot, Sparkles, Map, Clock3, Check, Zap } from 'lucide-react'
 import { Button, Card, Input, Sidebar } from '../../components'
 import { Hero, ChatInterface, SuggestedPrompts, SkillGapAnalysis, WeeklyGoals, CareerRoadmap, InterviewReadiness, AIRecommendations } from './components'
 import { useState, useEffect } from 'react'
 import { getProfile, saveProfile, calculateProfileScore } from '../../utils/profileStorage'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 
 
@@ -12,11 +12,11 @@ const reveal = { initial: { opacity: 0, y: 12 }, whileInView: { opacity: 1, y: 0
 
 export default function CareerCopilot() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [profile, setProfile] = useState(() => getProfile())
 
-  // Header Search Input
-  const [headerSearch, setHeaderSearch] = useState('')
+
 
   // Sync profile storage updates
   useEffect(() => {
@@ -24,6 +24,23 @@ export default function CareerCopilot() {
     window.addEventListener('profile_updated', handleUpdate)
     return () => window.removeEventListener('profile_updated', handleUpdate)
   }, [])
+
+  // Handle auto-scroll based on navigation state
+  useEffect(() => {
+    if (location.state?.scrollToChat) {
+      navigate(location.pathname, { replace: true, state: {} })
+      const timer = setTimeout(() => {
+        document.getElementById('copilot-chat')?.scrollIntoView({ behavior: 'smooth' })
+      }, 150)
+      return () => clearTimeout(timer)
+    } else if (location.state?.scrollToRoadmap) {
+      navigate(location.pathname, { replace: true, state: {} })
+      const timer = setTimeout(() => {
+        document.getElementById('copilot-roadmap')?.scrollIntoView({ behavior: 'smooth' })
+      }, 150)
+      return () => clearTimeout(timer)
+    }
+  }, [location, navigate])
 
   // Weekly Goals State
   const [weeklyGoals, setWeeklyGoals] = useState(() => {
@@ -583,13 +600,7 @@ COMMUNICATION STYLE
     }
   }
 
-  // Handle header search
-  const triggerHeaderSearch = () => {
-    if (!headerSearch.trim()) return
-    handleSendMessage(headerSearch)
-    setHeaderSearch('')
-    document.getElementById('copilot-chat')?.scrollIntoView({ behavior: 'smooth' })
-  }
+
 
   // Compute skill gap dynamically
   const getMissingSkills = () => {
@@ -749,21 +760,7 @@ COMMUNICATION STYLE
                 </p>
               </div>
 
-              <div className="hidden md:block w-[420px]">
-                <Input
-                  aria-label="Search copilot"
-                  placeholder="Ask career copilot..."
-                  leftIcon={MessageSquare}
-                  className="h-11 bg-[#111827]/70 text-sm"
-                  value={headerSearch}
-                  onChange={(e) => setHeaderSearch(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      triggerHeaderSearch()
-                    }
-                  }}
-                />
-              </div>
+
             </div>
           </header>
 
